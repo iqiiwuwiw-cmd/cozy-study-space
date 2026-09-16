@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CozySpace ☁️ - Interactive Study Room</title>
+  <meta name="description" content="Cozy pixel study room with lo-fi sounds, focus timer, desk planner, goal board, and study shelf.">
+
+  <!-- fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sakura-morning">
+
+  <!-- pet -->
+  <div class="particles"></div>
+
+  <img id="pixelCat" class="pixel-cat" src="assets/images/catblink.gif" alt="CozySpace cat" title="Click to pet me! 🐾" onclick="petCat()">
+  <div id="catSpeech" class="cat-speech hidden" role="status" aria-live="polite">purr... 🐾</div>
+
+  <!-- alerts -->
+  <div id="celebrationBanner" class="celebration-banner hidden" role="alert" aria-live="assertive">
+    <div class="celebration-content">
+      <span class="celebration-stars">⭐ ✦ ✨ ✦ ⭐</span>
+      <p id="celebrationText">session complete! +25 xp</p>
+    </div>
+  </div>
+
+  <!-- landing page -->
+  <section class="landing-page page" id="landingPage">
+    <nav>
+      <h2>☁️ CozySpace</h2>
+      <div class="nav-links">
+        <div class="nav-item" onclick="enterRoom('.timer-section')" title="Go to Timer">
+          <span>focus</span>
+          <div class="tooltip-box">
+            <img src="assets/images/focus.png" alt="focus">
+            <p>Start a cozy Pomodoro session and earn XP while you study.</p>
+          </div>
+        </div>
+
+        <div class="nav-item" onclick="enterRoom('.goals-section')" title="Go to Goals">
+          <span>goals</span>
+          <div class="tooltip-box"><span class="tooltip-icon">🎯</span><p>Set daily & weekly study targets with auto-tracking.</p></div>
+        </div>
+
+        <div class="nav-item" onclick="enterRoom('.planner-section')" title="Go to Planner">
+          <span>planner</span>
+          <div class="tooltip-box"><span class="tooltip-icon">📅</span><p>Plan your subjects and connect tasks directly to the timer.</p></div>
+        </div>
+
+        <div class="nav-item" onclick="enterRoom('.shelf-section')" title="Go to Shelf">
+          <span>shelf</span>
+          <div class="tooltip-box"><span class="tooltip-icon">📚</span><p>Browse your cozy bookshelf and saved study resources.</p></div>
+        </div>
+
+        <div class="nav-item" onclick="enterRoom('.music-card')" title="Go to Music">
+          <span>music</span>
+          <div class="tooltip-box">
+            <img src="assets/images/music.webp" alt="music">
+            <p>Choose lo-fi, rain, cafe, or fireplace sounds for your mood.</p>
+          </div>
+        </div>
+
+        <div class="nav-item" onclick="enterRoom('.notes-section')" title="Go to Notes">
+          <span>notes</span>
+          <div class="tooltip-box">
+            <img src="assets/images/notes.png" alt="notes">
+            <p>Write tiny reminders and keep your thoughts in sticky notes.</p>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="landing-content">
+      <h1>CozySpace</h1>
+      <div class="preview-window">
+        <img id="previewImg" src="assets/images/sakura-morning.gif" alt="Cozy study room">
+      </div>
+      <p>A soft little study room where you can focus, listen to cozy sounds, organize study shelves, track goals, and collect tiny productivity wins.</p>
+      <button class="enter-btn" onclick="enterRoom()">enter room</button>
+    </div>
+  </section>
+
+  <!-- room page -->
+  <section class="room-page page hidden" id="roomPage">
+    <!-- top nav -->
+    <nav>
+      <h2 class="nav-brand" onclick="leaveRoom()" title="Return to lobby">☁️ CozySpace</h2>
+      <div class="room-nav-actions">
+        <button class="nav-home-btn" onclick="leaveRoom()" title="Return to lobby">← lobby</button>
+        <select id="themeSelect" class="theme-select" onchange="changeTheme(this.value)" aria-label="Select Theme">
+          <option value="sakura-morning" selected>Sakura Morning</option>
+          <option value="cozy-night">Cozy Night</option>
+          <option value="rainy-window">Rainy Window</option>
+          <option value="dark-academia">Dark Academia</option>
+        </select>
+
+        <div class="backup-actions">
+          <button type="button" class="backup-btn" onclick="exportUserData()" title="Export your data to a JSON backup file">💾 backup</button>
+          <label class="backup-btn restore-label" title="Restore study room from JSON backup">
+            <span>📂 restore</span>
+            <input type="file" accept=".json" onchange="importUserData(event)" style="display:none;">
+          </label>
+        </div>
+      </div>
+    </nav>
+
+    <!-- timer section -->
+    <section class="timer-section">
+      <div id="activeTaskTag" class="active-task-tag hidden">
+        <span>🍅 focusing on:</span>
+        <strong id="activeTaskLabel">Task Title</strong>
+        <button type="button" class="clear-active-task-btn" onclick="clearActiveTimerTask()" title="Clear task" aria-label="Clear active task">×</button>
+      </div>
+
+      <p class="section-label" id="timerLabel">focus time</p>
+      <div class="timer-container">
+        <div class="timer-progress-track"><div id="timerProgressBar" class="timer-progress-bar"></div></div>
+        <div class="timer" id="timer">25:00</div>
+      </div>
+
+      <div class="mode-buttons">
+        <button class="mode-btn active" data-minutes="25" onclick="setMode(25)">focus</button>
+        <button class="mode-btn" data-minutes="5" onclick="setMode(5)">short break</button>
+        <button class="mode-btn" data-minutes="15" onclick="setMode(15)">long rest</button>
+        <button class="mode-btn custom-pill-btn" onclick="openCustomTimerModal()">⏱️ custom</button>
+      </div>
+
+      <div class="timer-controls">
+        <button id="startBtn" onclick="startTimer()">start</button>
+        <button id="pauseBtn" onclick="pauseTimer()">pause</button>
+        <button id="skipBtn" onclick="skipTimer()" title="Skip to next session">skip ⏭</button>
+        <button id="resetBtn" onclick="resetTimer()">reset</button>
+        <button id="soundToggleBtn" class="sound-toggle-btn" onclick="toggleTimerSound()">🔔 chime on</button>
+        <select id="chimeSoundSelect" class="chime-select" onchange="setChimeType(this.value)" title="Choose timer chime tone">
+          <option value="bell">🔔 Cozy Bell</option>
+          <option value="bowl">🥣 Singing Bowl</option>
+          <option value="blip">👾 Retro Blip</option>
+        </select>
+      </div>
+
+      <div class="timer-cycle-tracker" id="timerCycleTracker">
+        <span class="cycle-title">cycle:</span>
+        <span id="cycleDots" class="cycle-indicators"><span class="cycle-dot">⚪</span><span class="cycle-dot">⚪</span><span class="cycle-dot">⚪</span><span class="cycle-dot">⚪</span></span>
+        <span class="cycle-stats">streak: <strong id="streakCount">0/4</strong> &bull; today: <strong id="minutesToday">0m</strong></span>
+      </div>
+
+      <button id="focusModeBtn" class="focus-mode-btn" onclick="toggleFocusMode()">enter deep focus ☾</button>
+    </section>
+
+    <!-- sound cards -->
+    <section class="small-widgets">
+      <div class="soft-widget quote-card">
+        <h3>gentle reminder</h3>
+        <p id="quote">"Drink some water and fix your posture."</p>
+      </div>
+
+      <div class="soft-widget music-card">
+        <div class="music-card-header">
+          <h3>cozy sounds</h3>
+          <div class="music-upload-controls">
+            <input type="file" id="trackFileInput" accept="audio/*" multiple onchange="handleTrackUpload(event)" style="display:none;">
+            <button type="button" class="upload-file-btn" onclick="document.getElementById('trackFileInput').click()" title="Add music files">+ add audio</button>
+          </div>
+        </div>
+
+        <p id="musicName">Lo-fi Focus</p>
+        <div class="sound-buttons">
+          <button class="sound-btn active" data-sound="lofi" onclick="chooseSound('lofi')">lo-fi</button>
+          <button class="sound-btn" data-sound="rain" onclick="chooseSound('rain')">rain</button>
+          <button class="sound-btn" data-sound="cafe" onclick="chooseSound('cafe')">cafe</button>
+          <button class="sound-btn" data-sound="fireplace" onclick="chooseSound('fireplace')">fireplace</button>
+        </div>
+
+        <div class="ambient-layer-row">
+          <span class="ambient-label">layer ambience:</span>
+          <div class="ambient-chips">
+            <button type="button" class="ambient-chip" data-ambient="rain" onclick="toggleAmbientLayer('rain')">🌧️ rain</button>
+            <button type="button" class="ambient-chip" data-ambient="cafe" onclick="toggleAmbientLayer('cafe')">☕ cafe</button>
+            <button type="button" class="ambient-chip" data-ambient="fireplace" onclick="toggleAmbientLayer('fireplace')">🔥 fireplace</button>
+          </div>
+          <div class="ambient-vol-wrap" title="Ambient layer volume">
+            <span>vol:</span>
+            <input type="range" class="ambient-vol" min="0" max="1" step="0.05" value="0.35" oninput="changeAmbientVolume(this.value)">
+          </div>
+        </div>
+
+        <div class="music-drop-zone" id="musicDropZone" onclick="document.getElementById('trackFileInput').click()">
+          <span>drag & drop audio files here (saved locally in IndexedDB) 🎵</span>
+        </div>
+        <div id="uploadedTracksList" class="uploaded-tracks-list"></div>
+      </div>
+    </section>
+
+    <!-- goals section -->
+    <section class="goals-section">
+      <div class="soft-widget goals-widget">
+        <div class="widget-header-row">
+          <div class="widget-title-group">
+            <h3>study goals 🎯</h3>
+            <span class="widget-subtitle">corkboard targets & auto-tracking</span>
+          </div>
+
+          <div class="goals-controls">
+            <div class="filter-pills" id="goalFilterPills">
+              <button type="button" class="filter-pill active" data-filter="all" onclick="filterGoals('all')">all</button>
+              <button type="button" class="filter-pill" data-filter="daily" onclick="filterGoals('daily')">daily</button>
+              <button type="button" class="filter-pill" data-filter="weekly" onclick="filterGoals('weekly')">weekly</button>
+            </div>
+            <button type="button" class="cozy-action-btn" onclick="openAddGoalModal()">+ new goal</button>
+          </div>
+        </div>
+
+        <div id="goalsList" class="goals-board"></div>
+      </div>
+    </section>
+
+    <!-- planner section -->
+    <section class="planner-section">
+      <div class="soft-widget planner-widget">
+        <div class="widget-header-row">
+          <div class="widget-title-group">
+            <h3>study planner 📅</h3>
+            <span class="widget-subtitle">cozy desk journal & timer sync</span>
+          </div>
+
+          <div class="planner-controls">
+            <div class="filter-pills" id="plannerPeriodPills">
+              <button type="button" class="filter-pill active" data-period="today" onclick="setPlannerPeriod('today')">today's focus</button>
+              <button type="button" class="filter-pill" data-period="week" onclick="setPlannerPeriod('week')">this week</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="planner-input-bar">
+          <div class="planner-input-field subject-field">
+            <input type="text" id="taskSubjectInput" placeholder="subject (Physics, Math)" maxlength="20">
+          </div>
+          <div class="planner-input-field title-field">
+            <input type="text" id="taskTitleInput" placeholder="task (e.g. 2 calculus problem sets)" maxlength="60">
+          </div>
+          <div class="planner-input-field duration-field">
+            <select id="taskDurationSelect" aria-label="Estimated Duration">
+              <option value="25">25 min (1 pomodoro)</option>
+              <option value="50">50 min (2 pomodoros)</option>
+              <option value="15">15 min quick review</option>
+              <option value="45">45 min deep dive</option>
+              <option value="60">60 min study block</option>
+            </select>
+          </div>
+          <label class="priority-checkbox-label" title="Mark as high priority">
+            <input type="checkbox" id="taskPriorityInput">
+            <span>⭐ priority</span>
+          </label>
+          <button type="button" class="cozy-action-btn" onclick="addPlannerTask()">+ add</button>
+        </div>
+
+        <div id="plannerList" class="planner-notebook-paper"></div>
+      </div>
+    </section>
+
+    <!-- shelf section -->
+    <section class="shelf-section">
+      <div class="soft-widget shelf-widget">
+        <div class="widget-header-row">
+          <div class="widget-title-group">
+            <h3>study shelf 📚</h3>
+            <span class="widget-subtitle">single bookshelf plank with books, notes & videos</span>
+          </div>
+
+          <div class="shelf-controls">
+            <div class="filter-pills" id="shelfFilterPills">
+              <button type="button" class="filter-pill active" data-subject="all" onclick="filterShelf('all')">all</button>
+              <button type="button" class="filter-pill" data-subject="physics" onclick="filterShelf('physics')">physics</button>
+              <button type="button" class="filter-pill" data-subject="math" onclick="filterShelf('math')">math</button>
+              <button type="button" class="filter-pill" data-subject="cs" onclick="filterShelf('cs')">cs</button>
+              <button type="button" class="filter-pill" data-subject="reading" onclick="filterShelf('reading')">reading</button>
+              <button type="button" class="filter-pill" data-subject="other" onclick="filterShelf('other')">other</button>
+            </div>
+            <button type="button" class="cozy-action-btn" onclick="openAddBookModal()">+ add book</button>
+          </div>
+        </div>
+
+        <div class="bookshelf-frame">
+          <div id="shelfPlanks" class="shelf-planks-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- xp section -->
+    <section class="xp-section">
+      <h3>focus journey <img src="assets/images/star.gif" class="star-icon" alt="star icon"></h3>
+      <div class="xp-info">
+        <span>level <span id="level">1</span></span>
+        <span><span id="xp">0</span>/100 xp</span>
+      </div>
+      <div class="xp-bar"><div id="xpFill"></div></div>
+      <p id="achievement">achievement: Study Novice 🌱</p>
+    </section>
+
+    <!-- notes section -->
+    <section class="notes-section">
+      <h3>sticky notes</h3>
+      <div class="note-input-container">
+        <div class="note-input">
+          <input type="text" id="noteInput" placeholder="write a tiny reminder...">
+          <button onclick="addNote()">add</button>
+        </div>
+
+        <div class="note-color-bar">
+          <span class="color-bar-label">color:</span>
+          <div class="color-swatches" id="colorSwatches">
+            <button type="button" class="color-swatch active" style="background-color: #fff3a6;" onclick="selectNoteColor('#fff3a6', this)" title="Butter Yellow" aria-label="Butter Yellow note color"></button>
+            <button type="button" class="color-swatch" style="background-color: #ffd6e7;" onclick="selectNoteColor('#ffd6e7', this)" title="Sakura Pink" aria-label="Sakura Pink note color"></button>
+            <button type="button" class="color-swatch" style="background-color: #d8f3dc;" onclick="selectNoteColor('#d8f3dc', this)" title="Matcha Mint" aria-label="Matcha Mint note color"></button>
+            <button type="button" class="color-swatch" style="background-color: #cce5ff;" onclick="selectNoteColor('#cce5ff', this)" title="Sky Blue" aria-label="Sky Blue note color"></button>
+            <button type="button" class="color-swatch" style="background-color: #e8d7ff;" onclick="selectNoteColor('#e8d7ff', this)" title="Lavender" aria-label="Lavender note color"></button>
+            <button type="button" class="color-swatch" style="background-color: #ffe5d9;" onclick="selectNoteColor('#ffe5d9', this)" title="Warm Peach" aria-label="Warm Peach note color"></button>
+          </div>
+
+          <label class="custom-color-label" title="Pick custom color">
+            <span>custom 🎨</span>
+            <input type="color" id="customColorInput" value="#fff3a6" oninput="selectCustomColor(this.value)">
+          </label>
+        </div>
+      </div>
+
+      <div id="notesList" class="notes-wall"></div>
+    </section>
+  </section>
+
+  <!-- timer popup -->
+  <div id="customTimerModal" class="cozy-modal-backdrop hidden" onclick="handleBackdropClick(event, 'customTimerModal')">
+    <div class="cozy-modal-card">
+      <div class="modal-header">
+        <h3>custom timer ⏱️</h3>
+        <button type="button" class="modal-close-btn" onclick="closeCustomTimerModal()" aria-label="Close modal">×</button>
+      </div>
+
+      <p class="modal-sub">choose how many minutes you'd like to study or rest:</p>
+      <div class="custom-timer-input-row">
+        <input type="number" id="customMinutesInput" min="1" max="180" value="30">
+        <span class="unit-text">minutes</span>
+      </div>
+
+      <div class="quick-steppers">
+        <button type="button" class="stepper-pill" onclick="setCustomMinutesValue(10)">10m</button>
+        <button type="button" class="stepper-pill" onclick="setCustomMinutesValue(20)">20m</button>
+        <button type="button" class="stepper-pill" onclick="setCustomMinutesValue(30)">30m</button>
+        <button type="button" class="stepper-pill" onclick="setCustomMinutesValue(45)">45m</button>
+        <button type="button" class="stepper-pill" onclick="setCustomMinutesValue(60)">60m</button>
+        <button type="button" class="stepper-pill" onclick="setCustomMinutesValue(90)">90m</button>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cozy-modal-btn cancel" onclick="closeCustomTimerModal()">cancel</button>
+        <button type="button" class="cozy-modal-btn confirm" onclick="applyCustomTimer()">set timer ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- goal popup -->
+  <div id="addGoalModal" class="cozy-modal-backdrop hidden" onclick="handleBackdropClick(event, 'addGoalModal')">
+    <div class="cozy-modal-card">
+      <div class="modal-header">
+        <h3>new study goal 🎯</h3>
+        <button type="button" class="modal-close-btn" onclick="closeAddGoalModal()" aria-label="Close modal">×</button>
+      </div>
+
+      <div class="modal-form-group">
+        <label for="goalTitleInput">goal title:</label>
+        <input type="text" id="goalTitleInput" placeholder="e.g. Finish 2 Physics chapters" maxlength="50">
+      </div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-group">
+          <label for="goalTypeSelect">timeframe:</label>
+          <select id="goalTypeSelect">
+            <option value="daily">daily goal</option>
+            <option value="weekly">weekly goal</option>
+          </select>
+        </div>
+
+        <div class="modal-form-group">
+          <label for="goalTargetInput">target amount:</label>
+          <input type="number" id="goalTargetInput" min="1" max="100" value="2">
+        </div>
+
+        <div class="modal-form-group">
+          <label for="goalMetricInput">metric / unit:</label>
+          <input type="text" id="goalMetricInput" placeholder="chapters, sets" value="chapters" maxlength="15">
+        </div>
+      </div>
+
+      <div class="modal-form-checkbox">
+        <label>
+          <input type="checkbox" id="goalAutoSessionCheck">
+          <span>🍅 auto-track with completed focus sessions</span>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cozy-modal-btn cancel" onclick="closeAddGoalModal()">cancel</button>
+        <button type="button" class="cozy-modal-btn confirm" onclick="saveNewGoal()">create goal ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- book popup -->
+  <div id="addBookModal" class="cozy-modal-backdrop hidden" onclick="handleBackdropClick(event, 'addBookModal')">
+    <div class="cozy-modal-card">
+      <div class="modal-header">
+        <h3>place book on shelf 📚</h3>
+        <button type="button" class="modal-close-btn" onclick="closeAddBookModal()" aria-label="Close modal">×</button>
+      </div>
+
+      <div class="modal-form-group">
+        <label for="bookTitleInput">title / resource name:</label>
+        <input type="text" id="bookTitleInput" placeholder="e.g. University Physics Notes" maxlength="40">
+      </div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-group">
+          <label for="bookSubjectInput">subject:</label>
+          <input type="text" id="bookSubjectInput" placeholder="Physics, Math, CS" maxlength="20">
+        </div>
+
+        <div class="modal-form-group">
+          <label for="bookTypeSelect">resource type:</label>
+          <select id="bookTypeSelect">
+            <option value="link">🔗 web link</option>
+            <option value="pdf">📄 pdf document</option>
+            <option value="video">🎥 video lecture</option>
+            <option value="reading">📖 reading</option>
+          </select>
+        </div>
+
+        <div class="modal-form-group">
+          <label for="bookColorSelect">spine color:</label>
+          <select id="bookColorSelect">
+            <option value="wood">🪵 vintage leather</option>
+            <option value="sage">🌿 matcha sage</option>
+            <option value="sakura">🌸 sakura pink</option>
+            <option value="indigo">🌌 twilight blue</option>
+            <option value="terracotta">🍂 warm rust</option>
+            <option value="lavender">🪻 gentle violet</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-form-group">
+        <label for="bookUrlInput">resource link / url:</label>
+        <input type="url" id="bookUrlInput" placeholder="https://example.com/notes.pdf">
+      </div>
+
+      <div class="modal-form-group">
+        <label for="bookNotesInput">tiny notes / summary:</label>
+        <input type="text" id="bookNotesInput" placeholder="Chapters 1-4 formulas & sample exams" maxlength="80">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cozy-modal-btn cancel" onclick="closeAddBookModal()">cancel</button>
+        <button type="button" class="cozy-modal-btn confirm" onclick="saveNewBook()">place on shelf ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- book details popup -->
+  <div id="bookDetailModal" class="cozy-modal-backdrop hidden" onclick="handleBackdropClick(event, 'bookDetailModal')">
+    <div class="cozy-modal-card book-preview-card">
+      <div class="modal-header">
+        <h3 id="detailBookTitle">Book Title</h3>
+        <button type="button" class="modal-close-btn" onclick="closeBookDetailModal()" aria-label="Close modal">×</button>
+      </div>
+
+      <div class="book-detail-meta">
+        <span id="detailBookSubject" class="subject-badge">Subject</span>
+        <span id="detailBookType" class="type-badge">Type</span>
+      </div>
+
+      <p id="detailBookNotes" class="book-detail-notes">No notes available.</p>
+      <div class="modal-actions book-detail-actions">
+        <button type="button" class="cozy-modal-btn delete" onclick="deleteCurrentBook()">remove from shelf</button>
+        <a id="detailBookOpenLink" href="#" target="_blank" rel="noopener noreferrer" class="cozy-modal-btn confirm book-open-btn">open resource ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- player bar -->
+  <div class="mini-player">
+    <div class="album-art" id="albumArt">🎧</div>
+    <div class="mini-player-track-info">
+      <p id="miniSong">Lo-fi Focus</p>
+      <div class="mini-time-row">
+        <small id="playerStatus">cozy radio</small>
+        <span id="audioTimeLabel" class="mini-time-label">0:00 / 0:00</span>
+      </div>
+      <input type="range" id="audioTrackSeekbar" class="mini-track-seekbar" min="0" max="100" value="0" oninput="seekAudioTrack(this.value)" title="Seek audio track">
+    </div>
+
+    <div class="mini-player-buttons">
+      <button onclick="playMusic()" title="Play">▶</button>
+      <button onclick="pauseMusic()" title="Pause">Ⅱ</button>
+      <label class="mini-player-upload" title="Upload music file">
+        <span>📁</span>
+        <input type="file" accept="audio/*" multiple onchange="handleTrackUpload(event)" style="display:none;">
+      </label>
+      <input class="mini-volume" type="range" min="0" max="1" step="0.05" value="0.5" title="Volume" oninput="changeVolume(this.value)">
+    </div>
+  </div>
+
+  <!-- sound players -->
+  <audio id="audioPlayer" loop></audio>
+  <audio id="ambientPlayer" loop></audio>
+
+  <!-- scripts -->
+  <script src="script.js" defer></script>
+  <script src="timer.js" defer></script>
+  <script src="goals.js" defer></script>
+  <script src="planner.js" defer></script>
+  <script src="shelf.js" defer></script>
+  <script src="notes.js" defer></script>
+  <script src="debug.js" defer></script>
+</body>
+</html>
