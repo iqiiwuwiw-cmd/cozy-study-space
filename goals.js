@@ -120,21 +120,28 @@
 
       return (
         `<div class="goal-card ${g.completed ? 'completed' : ''}" data-id="${g.id}">` +
-        '<div class="goal-card-header">' +
-        `<span class="goal-tag ${safeTimeframe}">${safeTimeframe}</span>` +
-        autoBadge +
-        '<button type="button" class="goal-del-btn" data-action="delete" title="Delete goal">&times;</button>' +
-        '</div>' +
-        `<h4 class="goal-card-title">${safeTitle}</h4>` +
-        '<div class="goal-progress-row">' +
-        `<div class="goal-progress-track"><div class="goal-progress-fill" style="width: ${pct}%;"></div></div>` +
-        `<span class="goal-fraction">${g.current}/${g.target} ${g.unit}</span>` +
-        '</div>' +
-        '<div class="goal-actions">' +
-        '<button type="button" class="goal-step-btn" data-action="decrement" title="Step down">-1</button>' +
-        '<button type="button" class="goal-step-btn primary" data-action="increment" title="Step up">+1</button>' +
-        `<button type="button" class="goal-done-toggle ${doneClass}" data-action="toggle-complete">${doneLabel}</button>` +
-        '</div>' +
+          '<div class="goal-header">' +
+            '<div style="display:flex;align-items:center;gap:6px;">' +
+              `<span class="goal-badge ${safeTimeframe}">${safeTimeframe}</span>` +
+              autoBadge +
+            '</div>' +
+            '<button type="button" class="goal-delete-btn" data-action="delete" title="Delete goal">&times;</button>' +
+          '</div>' +
+          `<div class="goal-title">${safeTitle}</div>` +
+          '<div class="goal-progress-wrap">' +
+            `<div class="goal-track"><div class="goal-meter" style="width: ${pct}%;"></div></div>` +
+            '<div class="goal-progress-text">' +
+              `<span>${g.current}/${g.target} ${g.unit}</span>` +
+              (g.completed ? '<span class="goal-completed-badge">✓ done</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="goal-actions-row">' +
+            '<div class="goal-stepper-group">' +
+              '<button type="button" class="goal-stepper-btn" data-action="decrement" title="Step down">-1</button>' +
+              '<button type="button" class="goal-stepper-btn" data-action="increment" title="Step up">+1</button>' +
+            '</div>' +
+            `<button type="button" class="cozy-modal-btn ${g.completed ? 'cancel' : 'confirm'}" data-action="toggle-complete" style="padding:4px 14px !important;font-size:18px !important;border-radius:10px !important;">${doneLabel}</button>` +
+          '</div>' +
         '</div>'
       );
     });

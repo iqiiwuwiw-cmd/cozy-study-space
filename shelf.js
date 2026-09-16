@@ -100,26 +100,35 @@
       : collection.filter(b => b.subject === currentFilter);
 
     if (!visible.length) {
-      grid.innerHTML = '<div class="empty-shelf-msg">no books on this shelf yet ~ add a reference 📚</div>';
+      grid.innerHTML = '<div class="shelf-plank"><div class="empty-shelf-msg" style="width:100%;text-align:center;color:rgba(255,250,242,0.7);font-size:24px;padding:40px 0;">empty shelf ledge ~ click + add book to place a resource here 📖</div></div>';
       return;
     }
 
-    const htmls = visible.map(book => {
+    const typeIcons = {
+      reading: '📖',
+      pdf: '📄',
+      video: '🎥',
+      link: '🔗'
+    };
+
+    const bookCards = visible.map((book, idx) => {
       const sid = escapeHtml(book.id);
       const stitle = escapeHtml(book.title);
       const scolor = escapeHtml(book.color || 'wood');
       const ssubject = escapeHtml(book.subject || 'other');
+      const icon = typeIcons[book.type] || '📖';
+      const heightIdx = (idx % 4) + 1;
 
       return (
-        `<div class="shelf-book book-spine spine-${scolor}" data-id="${sid}" title="${stitle}">` +
-          '<div class="spine-ribs"><span></span><span></span></div>' +
-          `<span class="spine-title">${stitle}</span>` +
-          `<span class="spine-subject">${ssubject}</span>` +
+        `<div class="shelf-book color-${scolor} h-${heightIdx}" data-id="${sid}" title="${stitle} (${ssubject})">` +
+          '<div class="book-ribbon"></div>' +
+          `<span class="book-title-vert">${stitle}</span>` +
+          `<span class="book-type-icon">${icon}</span>` +
         '</div>'
       );
     });
 
-    grid.innerHTML = htmls.join('');
+    grid.innerHTML = `<div class="shelf-plank">${bookCards.join('')}</div>`;
   }
 
   function openAddBookModal() {

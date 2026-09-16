@@ -79,24 +79,18 @@
       const tsub = window.escapeHtml ? window.escapeHtml(t.subject) : t.subject;
 
       return (
-        `<div class="planner-task-item ${t.completed ? 'completed' : ''} ${t.priority ? 'priority' : ''}" data-id="${tid}">` +
-          '<div class="task-check-wrap">' +
-            `<button type="button" class="task-checkbox" data-action="toggle" title="Toggle complete">${t.completed ? '✓' : ''}</button>` +
+        `<div class="planner-task-item ${t.completed ? 'completed' : ''}" data-id="${tid}">` +
+          `<button type="button" class="task-check-btn" data-action="toggle" title="Toggle complete">${t.completed ? '✓' : ''}</button>` +
+          `<span class="task-priority-star" data-action="star" title="Priority" style="${t.priority ? '' : 'opacity:0.3;filter:grayscale(1);'}">⭐</span>` +
+          `<span class="task-subject-tag">${tsub}</span>` +
+          `<span class="task-item-title">${ttitle}</span>` +
+          `<span class="task-duration-pill">⏱ ${t.duration || 25}m</span>` +
+          '<button type="button" class="task-focus-btn" data-action="focus" title="Focus on this task">🎯 focus</button>' +
+          '<div class="task-reorder-btns">' +
+            '<button type="button" class="task-arrow-btn" data-action="move-up" title="Move up">▲</button>' +
+            '<button type="button" class="task-arrow-btn" data-action="move-down" title="Move down">▼</button>' +
           '</div>' +
-          '<div class="task-main-col">' +
-            `<span class="task-title-text">${ttitle}</span>` +
-            '<div class="task-meta-row">' +
-              `<span class="task-subject-tag">${tsub}</span>` +
-              `<span class="task-duration-tag">⏱ ${t.duration || 25}m</span>` +
-              (t.priority ? '<span class="task-priority-badge">⭐ priority</span>' : '') +
-            '</div>' +
-          '</div>' +
-          '<div class="task-actions-col">' +
-            '<button type="button" class="task-action-btn focus-btn" data-action="focus" title="Focus on this task">🎯</button>' +
-            '<button type="button" class="task-action-btn reorder-btn" data-action="move-up" title="Move up">▲</button>' +
-            '<button type="button" class="task-action-btn reorder-btn" data-action="move-down" title="Move down">▼</button>' +
-            '<button type="button" class="task-action-btn del-btn" data-action="delete" title="Delete task">&times;</button>' +
-          '</div>' +
+          '<button type="button" class="task-delete-btn" data-action="delete" title="Delete task">&times;</button>' +
         '</div>'
       );
     });
@@ -195,6 +189,21 @@
     if (!listEl) return;
 
     listEl.addEventListener('click', e => {
+      const star = e.target.closest('.task-priority-star');
+      if (star) {
+        const item = star.closest('.planner-task-item');
+        if (item) {
+          const id = item.getAttribute('data-id');
+          const t = tasks.find(x => x.id === id);
+          if (t) {
+            t.priority = !t.priority;
+            save();
+            renderTasks();
+          }
+        }
+        return;
+      }
+
       const btn = e.target.closest('button[data-action]');
       if (!btn) return;
 
