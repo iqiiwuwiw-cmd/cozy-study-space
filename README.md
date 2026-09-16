@@ -123,4 +123,4 @@ I'm keeping track of a few little quirks to polish up:
 
 ## License
 
-[MIT](LICENSE) © 2026 Fluci. Feel free to fork it, make it yours, and build your dream study nook!
+[MIT](LICENSE) © 2026 19i2qi. Feel free to fork it, make it yours, and build your dream study nook!
